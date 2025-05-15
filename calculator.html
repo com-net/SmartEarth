@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartEarth - Energy Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e0f7fa;
+      margin: 0;
+      padding: 0;
+      color: #004d40;
+    }
+
+    header {
+      background-color: #00796b;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      color: #e0f7fa;
+    }
+
+    header img {
+      height: 60px;
+      margin-right: 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #e0f7fa;
+      font-weight: normal;
+    }
+
+    nav.top-links {
+      background-color: #004d40;
+      padding: 12px 0;
+      text-align: center;
+    }
+
+    nav.top-links a {
+      color: white;
+      margin: 0 20px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 10px 15px;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+
+    nav.top-links a:hover {
+      background-color: #009688;
+      border-radius: 4px;
+    }
+
+    .instructions {
+      background-color: #b2ebf2;
+      border-left: 5px solid #00796b;
+      padding: 15px;
+      margin: 25px;
+      border-radius: 8px;
+    }
+
+    .section, .appliance {
+      background-color: #b2dfdb;
+      margin: 15px 25px;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    label {
+      display: block;
+      margin: 8px 0 4px;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      width: 80px;
+    }
+
+    button {
+      margin: 20px 25px;
+      background-color: #00796b;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    #result {
+      margin: 30px 25px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #c8e6c9;
+      padding: 15px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header with logo and name -->
+  <header>
+    <img src="logo.png" alt="SmartEarth Logo" />
+    <div>
+      <h1>SmartEarth</h1>
+      <h2>Energy Calculator</h2>
+    </div>
+  </header>
+
+  <!-- Top navigation bar -->
+  <nav class="top-links">
+    <a href="index.html">Home</a>
+    <a href="calculator.html">Calculator</a>
+    <a href="daily.html">Daily Challenge</a>
+    <a href="qs.html">Quick Steps</a>
+  </nav>
+
+  <!-- Page heading -->
+  <h1 style="text-align:center; margin-top: 30px;">SmartEarth Energy Usage Calculator</h1>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <strong>Instructions:</strong>
+    <ul>
+      <li>Enter the number of people, rooms, halls, and kitchens in your house.</li>
+      <li>Then, enter the number of hours and minutes each appliance is used daily.</li>
+      <li>Click <strong>Calculate Energy</strong> to get your total usage and see how it compares to an average household.</li>
+      <li>If you have more than one of an appliance, add up all the usage and enter it below.</li>
+    </ul>
+  </div>
+
+  <!-- Calculator Form -->
+  <form id="energyForm">
+    <div class="section">
+      <label>Number of People in House:</label>
+      <input type="number" name="people" min="1" required value="1">
+
+      <label>Number of Rooms:</label>
+      <input type="number" name="rooms" min="1" required value="1">
+
+      <label>Number of Halls:</label>
+      <input type="number" name="halls" min="0" required value="1">
+
+      <label>Number of Kitchens:</label>
+      <input type="number" name="kitchens" min="1" required value="1">
+    </div>
+
+    <div id="appliances"></div>
+
+    <button type="button" onclick="calculateEnergy()">Calculate Energy</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const appliances = [
+      { name: "Water Purifier", key: "waterPurifier", watt: 50 },
+      { name: "Iron", key: "iron", watt: 1000 },
+      { name: "Geyser / Water Heater", key: "geyser", watt: 2000 },
+      { name: "Electric Kettle", key: "kettle", watt: 1500 },
+      { name: "Microwave Oven", key: "microwave", watt: 1200 },
+      { name: "Wi-Fi Router", key: "router", watt: 10 },
+      { name: "Television", key: "tv", watt: 150 },
+      { name: "Washing Machine", key: "washingMachine", watt: 500 },
+      { name: "Refrigerator", key: "fridge", watt: 150 },
+      { name: "Air Conditioner", key: "ac", watt: 1500 },
+      { name: "Table Fan", key: "tableFan", watt: 75 },
+      { name: "Ceiling Fan", key: "ceilingFan", watt: 75 },
+      { name: "LED Bulb", key: "ledBulb", watt: 10 },
+      { name: "Tube Light", key: "tubeLight", watt: 40 },
+    ];
+
+    const container = document.getElementById("appliances");
+    appliances.forEach(app => {
+      const div = document.createElement("div");
+      div.className = "appliance";
+      div.innerHTML = `
+        <label>${app.name} (${app.watt}W)</label>
+        Hours/day: <input type="number" name="${app.key}_h" min="0" value="0"> 
+        Minutes/day: <input type="number" name="${app.key}_m" min="0" max="59" value="0">
+      `;
+      container.appendChild(div);
+    });
+
+    function calculateEnergy() {
+      const form = document.forms["energyForm"];
+      let totalWh = 0;
+
+      appliances.forEach(app => {
+        let h = parseFloat(form[`${app.key}_h`].value) || 0;
+        let m = parseFloat(form[`${app.key}_m`].value) || 0;
+        if (app.key === "fridge") {
+          h = 24;
+          m = 0;
+        }
+        const totalHours = h + (m / 60);
+        totalWh += app.watt * totalHours;
+      });
+
+      const totalKWh = (totalWh / 1000).toFixed(2);
+      const monthlyKWh = (totalKWh * 30).toFixed(2);
+      const cost = (totalKWh * 8).toFixed(2);
+      const monthlyCost = (monthlyKWh * 8).toFixed(2);
+
+      const people = parseInt(form["people"].value) || 1;
+      const rooms = parseInt(form["rooms"].value) || 1;
+      const halls = parseInt(form["halls"].value) || 1;
+      const kitchens = parseInt(form["kitchens"].value) || 1;
+
+      const estimatedKWh = ((people * 1.5) + (rooms * 1.2) + (kitchens * 1.5) + (halls * 1.0)).toFixed(2);
+      const diff = (totalKWh - estimatedKWh).toFixed(2);
+
+      let comparisonText = "";
+      if (diff > 0) {
+        comparisonText = `⚠️ Your energy usage is <strong>${diff} kWh MORE</strong> than average for a house with ${rooms} room(s), ${halls} hall(s), ${kitchens} kitchen(s), and ${people} people.`;
+      } else if (diff < 0) {
+        comparisonText = `✅ Your energy usage is <strong>${Math.abs(diff)} kWh LESS</strong> than average for a house with ${rooms} room(s), ${halls} hall(s), ${kitchens} kitchen(s), and ${people} people.`;
+      } else {
+        comparisonText = `✔️ Your energy usage is <strong>exactly average</strong> for a house of this size.`;
+      }
+
+      document.getElementById("result").innerHTML =
+        `🔋 <strong>Daily Energy Usage:</strong> ${totalKWh} kWh<br>
+         💰 <strong>Estimated Daily Cost:</strong> ₹${cost}<br>
+         📅 <strong>Monthly Energy Usage:</strong> ${monthlyKWh} kWh<br>
+         💸 <strong>Estimated Monthly Cost:</strong> ₹${monthlyCost}<br><br>
+         Average for similar household: ${estimatedKWh} kWh/day<br><br>
+         ${comparisonText}`;
+    }
+  </script>
+
+</body>
+</html>
